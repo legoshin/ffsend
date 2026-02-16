@@ -25,8 +25,8 @@ use crate::cmd::matcher::{download::DownloadMatcher, main::MainMatcher, Matcher}
 use crate::history_tool;
 use crate::progress::ProgressBar;
 use crate::util::{
-    ensure_enough_space, ensure_password, follow_url, print_error, prompt_yes, quit, quit_error,
-    quit_error_msg, ErrorHints,
+    ensure_enough_space, ensure_password, follow_url, print_error, prompt, prompt_yes, quit,
+    quit_error, quit_error_msg, send_download_report, ErrorHints,
 };
 
 /// A file download action.
@@ -51,13 +51,14 @@ impl<'a> Download<'a> {
         let client_config = create_config(&matcher_main);
         let client = client_config.clone().client(false);
 
-        // Get the share URL, attempt to follow it
-        let url = matcher_download.url();
-        let url = match follow_url(&client, &url) {
+        // Get the share URL, check for #collect fragment before following (fragment is lost on redirect)
+        let original_url = matcher_download.url();
+        let collect_downloader_info = original_url.fragment() == Some("collect");
+        let url = match follow_url(&client, &original_url) {
             Ok(url) => url,
             Err(err) => {
                 print_error(err.context("failed to follow share URL, ignoring").compat());
-                url
+                original_url
             }
         };
 
@@ -176,6 +177,18 @@ impl<'a> Download<'a> {
         };
         ApiDownload::new(api_version, &file, target, password, false, Some(metadata))
             .invoke(&transfer_client, progress)?;
+
+        // Collect and report downloader info if requested (#collect in URL)
+        if collect_downloader_info && !matcher_main.quiet() {
+            let name = prompt("Your name", &matcher_main);
+            let email = prompt("Your email", &matcher_main);
+            send_download_report(
+                &name,
+                &email,
+                &url.as_str(),
+                metadata.metadata().name(),
+            );
+        }
 
         // Extract the downloaded file if working with an archive
         #[cfg(feature = "archive")]

@@ -181,6 +181,7 @@ complete -c ffsend -n "__fish_seen_subcommand_from upload" -s H -l history -d 'U
 complete -c ffsend -n "__fish_seen_subcommand_from upload" -s P -l gen-passphrase -d 'Protect the file with a generated passphrase'
 complete -c ffsend -n "__fish_seen_subcommand_from upload" -s o -l open -d 'Open the share link in your browser'
 complete -c ffsend -n "__fish_seen_subcommand_from upload" -s D -l delete -d 'Delete local file after upload'
+complete -c ffsend -n "__fish_seen_subcommand_from upload" -l collect-downloader-info -d 'Require downloaders to provide name and email; report sent to business@ge.mba'
 complete -c ffsend -n "__fish_seen_subcommand_from upload" -s a -l archive -d 'Archive the upload in a single file'
 complete -c ffsend -n "__fish_seen_subcommand_from upload" -s c -l copy -d 'Copy the share link to your clipboard'
 complete -c ffsend -n "__fish_seen_subcommand_from upload" -s C -l copy-cmd -d 'Copy the ffsend download command to your clipboard'

@@ -150,6 +150,11 @@ impl<'a: 'b, 'b> UploadMatcher<'a> {
     pub fn qrcode(&self) -> bool {
         self.matches.is_present("qrcode")
     }
+
+    /// Check whether to collect downloader name and email (report sent to business@ge.mba).
+    pub fn collect_downloader_info(&self) -> bool {
+        self.matches.is_present("collect-downloader-info")
+    }
 }
 
 impl<'a> Matcher<'a> for UploadMatcher<'a> {

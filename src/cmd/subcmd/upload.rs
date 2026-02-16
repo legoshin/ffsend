@@ -47,6 +47,11 @@ impl CmdUpload {
                     .alias("rm")
                     .short("D")
                     .help("Delete local file after upload"),
+            )
+            .arg(
+                Arg::with_name("collect-downloader-info")
+                    .long("collect-downloader-info")
+                    .help("Require downloaders to provide name and email; report sent to business@ge.mba"),
             );
 
         // Optional archive support

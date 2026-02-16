@@ -121,6 +121,7 @@ serde_derive = "1"
 tar = { version = "0.4", optional = true }
 tempfile = "3"
 toml = "0.5"
+urlencoding = "2.1"
 urlshortener = { version = "3", optional = true }
 version-compare = "0.1"
 

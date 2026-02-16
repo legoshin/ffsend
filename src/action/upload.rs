@@ -13,8 +13,13 @@ use failure::Fail;
 use ffsend_api::action::params::ParamsDataBuilder;
 use ffsend_api::action::upload::{Error as UploadError, Upload as ApiUpload};
 use ffsend_api::action::version::Error as VersionError;
-use ffsend_api::config::{upload_size_max, UPLOAD_SIZE_MAX_RECOMMENDED};
 use ffsend_api::pipe::ProgressReporter;
+
+/// Maximum upload size in bytes (10 GB). Overrides ffsend-api default for larger file support.
+const UPLOAD_SIZE_MAX: u64 = 10 * 1024 * 1024 * 1024;
+
+/// Recommended maximum upload size in bytes (10 GB). Used for the size warning threshold.
+const UPLOAD_SIZE_MAX_RECOMMENDED: u64 = UPLOAD_SIZE_MAX;
 use pathdiff::diff_paths;
 use prettytable::{format::FormatBuilder, Cell, Row, Table};
 #[cfg(feature = "qrcode")]
@@ -271,9 +276,8 @@ impl<'a> Upload<'a> {
 
         // TODO: extract this into external function
         {
-            // Determine the max file size
-            // TODO: set false parameter to authentication state
-            let max_size = upload_size_max(api_version, auth);
+            // Determine the max file size (use our override for 10GB support)
+            let max_size = UPLOAD_SIZE_MAX;
 
             // Get the file size, fail on empty files, warn about large files
             if let Ok(size) = path.metadata().map(|m| m.len()) {
@@ -395,6 +399,11 @@ impl<'a> Upload<'a> {
                     }
                 }
             }
+        }
+
+        // Append #collect fragment when downloader info collection is requested
+        if matcher_upload.collect_downloader_info() {
+            url.set_fragment(Some("collect"));
         }
 
         // Report the result

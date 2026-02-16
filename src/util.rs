@@ -40,6 +40,7 @@ use rand::distributions::Alphanumeric;
 use rand::{thread_rng, Rng};
 use regex::Regex;
 use rpassword::prompt_password_stderr;
+use urlencoding::encode;
 #[cfg(feature = "clipboard-bin")]
 use which::which;
 
@@ -300,6 +301,34 @@ pub fn open_url(url: impl Borrow<Url>) -> Result<(), IoError> {
 /// The program exit status is returned.
 pub fn open_path(path: &str) -> Result<(), IoError> {
     open::that(path)
+}
+
+/// Report recipient for downloader info collection.
+const REPORT_EMAIL: &str = "business@ge.mba";
+
+/// Send a download report with the downloader's name and email to business@ge.mba.
+/// Opens the user's email client with a pre-filled message.
+pub fn send_download_report(name: &str, email: &str, file_url: &str, filename: &str) {
+    let now = chrono::Utc::now().format("%Y-%m-%d %H:%M:%S UTC");
+    let body = format!(
+        "File Download Report\n\nName: {}\nEmail: {}\nFile: {}\nFilename: {}\nDownloaded at: {}",
+        name, email, file_url, filename, now
+    );
+    let subject = format!("File Download Report - {}", filename);
+    let mailto = format!(
+        "mailto:{}?subject={}&body={}",
+        REPORT_EMAIL,
+        encode(&subject),
+        encode(&body)
+    );
+    if let Err(err) = open_path(&mailto) {
+        eprintln!("Could not open email client to send report: {}", err);
+    } else if !env_var_present("FFSEND_QUIET") {
+        eprintln!(
+            "Opening email client to send download report to {}. Please click Send to complete.",
+            REPORT_EMAIL
+        );
+    }
 }
 
 /// Set the clipboard of the user to the given `content` string.
